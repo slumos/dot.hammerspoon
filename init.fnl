@@ -1,7 +1,10 @@
-(var buckeys [:ctrl :cmd])
+(set hs.logger.defaultLoggerLevel "info")
 (set hs.window.animationDuration 0.0)
 
+(var buckeys [:ctrl :cmd])
+
 (global ww spoon.WinWin)
+(global logger (hs.logger.new "init" "info"))
 
 ;; toggle hs.console with Ctrl+Cmd+~
 (hs.hotkey.bind
@@ -42,12 +45,11 @@
 (fn make-window-half-left [window]
   (window:setFrame (half-left-frame (window:screen))))
 
-(fn window-half-left? [window]
-  (let [window-frame (window:frame)]
-    (. window-frame :equal (half-left-frame (window:screen)))))
+(fn is-half-left? [window]
+  (local window-frame (window:frame))
+  (local screen (window:screen))
+  (: window-frame :equals (half-left-frame screen)))
 
 (hs.hotkey.bind buckeys :left (fn []
                                 (let [window (hs.window.focusedWindow)]
                                   (make-window-half-left window))))
-
-(window-half-left? (hs.window.focusedWindow))
