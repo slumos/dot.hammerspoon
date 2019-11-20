@@ -40,11 +40,16 @@
      (/2 sframe.w)
      sframe.h)))
 
+(fn un-fullscreen-window [window]
+  (if (window:isFullScreen) (window:setFullScreen false)))
+
 (fn make-window-half-left [window]
+  (un-fullscreen-window window)
   (window:moveToUnit hs.layout.left50)
   (flash-window window))
 
 (fn make-window-half-right [window]
+  (un-fullscreen-window window)
   (window:moveToUnit hs.layout.right50)
   (flash-window window))
 
