@@ -60,11 +60,17 @@
 (fn is-half-left? [window]
   (local window-frame (window:frame))
   (local screen (window:screen))
-  (: window-frame :equals (half-left-frame screen))
-  (highlight-window window))
+  (: window-frame :equals (half-left-frame screen)))
+
+(fn is-half-right? [window]
+  (: (window:frame) :equals (half-right-frame (window:screen))))
 
 (fn is-maximized? [window]
   (: (window:frame) :equals hs.layout.maximized))
+
+(fn multiple-screens? []
+  (let [screens (hs.screen.allScreens)]
+    (> (length screens) 1)))
 
 (fn make-window-big [window]
   "If there is only 1 screen, then full-screen window, else maximize it."
@@ -78,8 +84,29 @@
       (is-maximized? window) (center-window window)
       (make-window-big window)))
 
-(hs.hotkey.bind buckeys :left #(make-window-half-left (hs.window.focusedWindow)))
-(hs.hotkey.bind buckeys :right #(make-window-half-right (hs.window.focusedWindow)))
+(fn move-window-to-screen [window direction]
+  (local current-screen (window:screen))
+  (local target-screen (: current-screen direction))
+  (window:moveToScreen target-screen))
+
+(fn send-window-left [window]
+  (if (multiple-screens?)
+      (if (is-half-left? window) (do (move-window-to-screen :previous)
+                                   (make-window-half-right window))
+          (make-window-half-left window))
+      (make-window-half-left window)))
+
+(fn send-window-right [window]
+  (if (multiple-screens?)
+      (if (is-half-right? window)
+          (do
+            (move-window-to-screen :next)
+            (make-window-half-left window))
+          (make-window-half-right window))
+      (make-window-half-right window)))
+
+(hs.hotkey.bind buckeys :left #(send-window-left (hs.window.focusedWindow)))
+(hs.hotkey.bind buckeys :right #(send-window-right (hs.window.focusedWindow)))
 (hs.hotkey.bind buckeys :up #(toggle-window-big (hs.window.focusedWindow)))
 
 (hs.hotkey.bind buckeys "r" #(hs.reload))
