@@ -25,20 +25,10 @@
     (flash-window window)))
 
 (fn half-left-frame [screen]
-  (let [sframe (screen:frame)]
-    (hs.geometry.new
-     sframe.x
-     sframe.y
-     (/2 sframe.w)
-     sframe.h)))
+  (screen:fromUnitRect hs.layout.left50))
 
 (fn half-right-frame [screen]
-  (let [sframe (screen:frame)]
-    (hs.geometry.new
-     (+ sframe.x (/2 sframe.w))
-     sframe.y
-     (/2 sframe.w)
-     sframe.h)))
+  (screen:fromUnitRect hs.layout.right50))
 
 (fn un-fullscreen-window [window]
   (if (window:isFullScreen) (window:setFullScreen false)))
@@ -57,13 +47,25 @@
   (window:centerOnScreen (window:screen))
   (flash-window window))
 
+(fn window-approximately [window frame delta-arg]
+  "True if window is approximately the same as frame"
+  (let [delta (or delta-arg 10.0)
+        window-frame (window:frame)]
+    (and
+     (< (math.abs (- window-frame.x frame.x)) delta)
+     (< (math.abs (- window-frame.y frame.y)) delta)
+     (< (math.abs (- window-frame.w frame.w)) delta)
+     (< (math.abs (- window-frame.h frame.h)) delta))))
+
 (fn is-half-left? [window]
   (local window-frame (window:frame))
   (local screen (window:screen))
-  (: window-frame :equals (half-left-frame screen)))
+  (window-approximately window (screen:fromUnitRect hs.layout.left50)))
 
 (fn is-half-right? [window]
-  (: (window:frame) :equals (half-right-frame (window:screen))))
+  (local window-frame (window:frame))
+  (local screen (window:screen))
+  (window-approximately window (screen:fromUnitRect hs.layout.right50))))
 
 (fn is-maximized? [window]
   (: (window:frame) :equals hs.layout.maximized))
@@ -91,7 +93,7 @@
 
 (fn send-window-left [window]
   (if (multiple-screens?)
-      (if (is-half-left? window) (do (move-window-to-screen :previous)
+      (if (is-half-left? window) (do (move-window-to-screen window :previous)
                                    (make-window-half-right window))
           (make-window-half-left window))
       (make-window-half-left window)))
@@ -100,13 +102,24 @@
   (if (multiple-screens?)
       (if (is-half-right? window)
           (do
-            (move-window-to-screen :next)
+            (move-window-to-screen window :next)
             (make-window-half-left window))
           (make-window-half-right window))
       (make-window-half-right window)))
+
+(fn dump []
+  (local focused-window (hs.window.focusedWindow))
+  (local focused-screen (focused-window:screen))
+  (print "Dump:")
+  (print "Focused window:" focused-window)
+  (print "  Frame:" (focused-window:frame))
+  (print "Screen:" focused-screen)
+  (print "  Half-left:" (half-left-frame focused-screen))
+  (print "  Half-right:" (half-right-frame focused-screen)))
 
 (hs.hotkey.bind buckeys :left #(send-window-left (hs.window.focusedWindow)))
 (hs.hotkey.bind buckeys :right #(send-window-right (hs.window.focusedWindow)))
 (hs.hotkey.bind buckeys :up #(toggle-window-big (hs.window.focusedWindow)))
 
 (hs.hotkey.bind buckeys "r" #(hs.reload))
+(hs.hotkey.bind buckeys "d" #(dump))
