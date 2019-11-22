@@ -4,7 +4,6 @@
 
 (var buckeys [:ctrl :cmd])
 
-(global ww spoon.WinWin)
 (global logger (hs.logger.new "init" "info"))
 
 (fn /2 [n] (// n 2))
@@ -47,15 +46,13 @@
   (window:centerOnScreen (window:screen))
   (flash-window window))
 
-(fn window-approximately [window frame delta-arg]
+(fn window-approximately [window target-frame delta-arg]
   "True if window is approximately the same as frame"
-  (let [delta (or delta-arg 10.0)
+  (let [delta (or delta-arg 20.0)
         window-frame (window:frame)]
     (and
-     (< (math.abs (- window-frame.x frame.x)) delta)
-     (< (math.abs (- window-frame.y frame.y)) delta)
-     (< (math.abs (- window-frame.w frame.w)) delta)
-     (< (math.abs (- window-frame.h frame.h)) delta))))
+     (< (: window-frame.xy :distance target-frame.xy) delta)
+     (< (: window-frame.x2y2 :distance target-frame.x2y2) delta))))
 
 (fn is-half-left? [window]
   (local window-frame (window:frame))
@@ -65,7 +62,7 @@
 (fn is-half-right? [window]
   (local window-frame (window:frame))
   (local screen (window:screen))
-  (window-approximately window (screen:fromUnitRect hs.layout.right50))))
+  (window-approximately window (screen:fromUnitRect hs.layout.right50)))
 
 (fn is-maximized? [window]
   (: (window:frame) :equals hs.layout.maximized))
