@@ -58,12 +58,16 @@
   (let [screens (hs.screen.allScreens)]
     (> (length screens) 1)))
 
+;; (fn make-window-big [window]
+;;   "If there is only 1 screen, then full-screen window, else maximize it."
+;;   (let [screens (hs.screen.allScreens)]
+;;     (if (> (length screens) 1)
+;;         (window:maximize)
+;;         (window:setFullScreen true))))
+
 (fn make-window-big [window]
-  "If there is only 1 screen, then full-screen window, else maximize it."
-  (let [screens (hs.screen.allScreens)]
-    (if (> (length screens) 1)
-        (window:maximize)
-        (window:setFullScreen true))))
+  (window:maximize)
+  (flash-window window))
 
 (fn toggle-window-big [window]
   (if (window:isFullScreen) (window:setFullScreen false)
