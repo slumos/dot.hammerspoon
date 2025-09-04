@@ -35,11 +35,14 @@
 
 (fn window-approximately [window target-frame delta-arg]
   "True if window is approximately the same as frame"
-  (let [delta (or delta-arg 20.0)
-        window-frame (window:frame)]
-    (and
-     (< (: window-frame.xy :distance target-frame.xy) delta)
-     (< (: window-frame.x2y2 :distance target-frame.x2y2) delta))))
+  (let [delta (or delta-arg 100.0)
+        window-frame (window:frame)
+        d1 (: window-frame.xy :distance target-frame.xy)
+        d2 (: window-frame.x2y2 :distance target-frame.x2y2)]
+    ;; (logger.d window-frame target-frame delta)
+    ;; (logger.d d1 d2)
+    ;; (logger.d (and (< d1 delta) (< d2 delta)))
+    (and (< d1 delta) (< d2 delta))))
 
 (fn is-half-left? [window]
   (local window-frame (window:frame))
@@ -81,8 +84,10 @@
 
 (fn send-window-left [window]
   (if (multiple-screens?)
-      (if (is-half-left? window) (do (move-window-to-screen window :previous)
-                                   (make-window-half-right window))
+      (if (is-half-left? window)
+          (do
+            (move-window-to-screen window :previous)
+            (make-window-half-right window))
           (make-window-half-left window))
       (make-window-half-left window)))
 
